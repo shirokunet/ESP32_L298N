@@ -19,33 +19,33 @@ ESP32_L298N::ESP32_L298N(int pin1, int pin2, int ch1, int ch2, bool is_pwm)
   }
 }
 
-int ESP32_L298N::speed_limit(int speed, int minmax)
+int ESP32_L298N::speed_limit(int i_speed, int minmax)
 {
-  if (speed>=minmax)
+  if (i_speed>=minmax)
     return minmax;
-  else if (speed<=-minmax)
+  else if (i_speed<=-minmax)
     return -minmax;
   else
-    return speed;
+    return i_speed;
 }
 
-void ESP32_L298N::drive(int speed)
+void ESP32_L298N::drive(float speed)
 {
-  speed = speed_limit(speed);
-  if (speed>=0) fwd(speed);
-  else rev(-speed);
+  int i_speed = speed_limit(int(speed * 255));
+  if (i_speed>=0) fwd(i_speed);
+  else rev(-i_speed);
 }
 
-void ESP32_L298N::drive(int speed, int duration)
+void ESP32_L298N::drive(float speed, int duration)
 {
   drive(speed);
   delay(duration);
 }
 
-void ESP32_L298N::fwd(int speed)
+void ESP32_L298N::fwd(int i_speed)
 {
   if(is_pwm_){
-    ledcWrite(ch1_, speed);
+    ledcWrite(ch1_, i_speed);
     ledcWrite(ch2_, 0);
   }else{
     digitalWrite(pin1_, HIGH);
@@ -53,11 +53,11 @@ void ESP32_L298N::fwd(int speed)
   }
 }
 
-void ESP32_L298N::rev(int speed)
+void ESP32_L298N::rev(int i_speed)
 {
   if(is_pwm_){
     ledcWrite(ch1_, 0);
-    ledcWrite(ch2_, speed);
+    ledcWrite(ch2_, i_speed);
   }else{
     digitalWrite(pin1_, LOW);
     digitalWrite(pin2_, HIGH);
@@ -86,7 +86,7 @@ void ESP32_L298N::standby()
   }
 }
 
-void ESP32_L298N::test(int speed, int delay_milisec)
+void ESP32_L298N::test(float speed, int delay_milisec)
 {
   drive(speed);
   delay(delay_milisec);
